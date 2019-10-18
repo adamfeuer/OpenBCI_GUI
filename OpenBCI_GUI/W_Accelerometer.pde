@@ -151,6 +151,10 @@ class W_Accelerometer extends Widget {
         for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
             if (eegDataSource == DATASOURCE_SYNTHETIC) {
                 synthesizeAccelData();
+                // af
+                // will eventually be LSL accel stream
+            } else if (eegDataSource == DATASOURCE_LSL) {
+                synthesizeAccelData();
             } else if (eegDataSource == DATASOURCE_CYTON) {
                 currentAccelVals[i] = hub.validAccelValues[i] * cyton.get_scale_fac_accel_G_per_count();
             } else if (eegDataSource == DATASOURCE_GANGLION) {
@@ -561,6 +565,10 @@ class AccelerometerBar {
                 case DATASOURCE_SYNTHETIC: //use synthetic data (for GUI debugging)
                     numSamplesToProcess = 1;
                     break;
+                // af
+                case DATASOURCE_LSL: //use synthetic data (for GUI debugging) (will eventually be LSL)
+                    numSamplesToProcess = 1;
+                    break;
                 case DATASOURCE_PLAYBACKFILE:
                     // handle wrap-around
                     lastProcessedDataPacketInd = min(lastProcessedDataPacketInd, currentTableRowIndex);
@@ -598,7 +606,9 @@ class AccelerometerBar {
     void setGPlotPoints(int accelBuffSize) {
         //println("UPDATING ACCEL GRAPH");
         int accelBuffDiff = accelBuffSize - nPoints;
-        if (numSamplesToProcess > 0 || eegDataSource == DATASOURCE_SYNTHETIC) {
+        // af
+        if (numSamplesToProcess > 0 || eegDataSource == DATASOURCE_SYNTHETIC ||
+                eegDataSource == DATASOURCE_LSL) {
             try {
                 for (int i = accelBuffDiff; i < accelBuffSize; i++) { //same method used in W_TimeSeries
                     GPoint tempPointX = new GPoint(accelTimeArray[i-accelBuffDiff], accelArray[0][i]);

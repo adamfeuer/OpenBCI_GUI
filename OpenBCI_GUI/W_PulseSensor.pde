@@ -111,6 +111,9 @@ class W_PulseSensor extends Widget {
 
         } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  // SYNTHETIC
 
+        // af
+        } else if (eegDataSource == DATASOURCE_LSL) {  // LSL
+
         }
         else {  // PLAYBACK
 

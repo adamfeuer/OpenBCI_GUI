@@ -89,6 +89,10 @@ int getDataIfAvailable(int pointCounter) {
                 case DATASOURCE_SYNTHETIC: //use synthetic data (for GUI debugging)
                     synthesizeData(nchan, getSampleRateSafe(), cyton.get_scale_fac_uVolts_per_count(), dataPacketBuff[lastReadDataPacketInd]);
                     break;
+                // af
+                case DATASOURCE_LSL : //use synthetic data (for GUI debugging) (will be LSL eventually)
+                    synthesizeData(nchan, getSampleRateSafe(), cyton.get_scale_fac_uVolts_per_count(), dataPacketBuff[lastReadDataPacketInd]);
+                    break;
                 case DATASOURCE_PLAYBACKFILE:
                     currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
                     break;

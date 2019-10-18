@@ -761,6 +761,10 @@ void initSystem() throws Exception {
         case DATASOURCE_SYNTHETIC:
             //do nothing
             break;
+        // af
+        case DATASOURCE_LSL:
+            //do nothing (will eventually be LSL)
+            break;
         case DATASOURCE_PLAYBACKFILE:
             break;
         case DATASOURCE_GANGLION:
@@ -1002,7 +1006,9 @@ void stopButtonWasPressed() {
         if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
             ganglion.impedanceStop();
         }
-        if (outputDataSource > OUTPUT_SOURCE_NONE && eegDataSource < DATASOURCE_PLAYBACKFILE) {
+        // af
+        if (outputDataSource > OUTPUT_SOURCE_NONE && eegDataSource < DATASOURCE_PLAYBACKFILE &&
+            eegDataSource != DATASOURCE_LSL) {
             //open data file if it has not already been opened
             if (!settings.isLogFileOpen()) {
                 if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(getDateString());
@@ -1173,6 +1179,7 @@ void systemUpdate() { // for updating data values and variables
             //Don't check duration if user has selected "No Limit"
             if (outputDataSource == OUTPUT_SOURCE_ODF
                 && eegDataSource < DATASOURCE_PLAYBACKFILE
+                && eegDataSource != DATASOURCE_LSL
                 && settings.limitOBCILogFileDuration()) {
                     fileoutput_odf.limitRecordingFileDuration();
             }
@@ -1256,6 +1263,10 @@ void systemDraw() { //for drawing to the screen
                 break;
             case DATASOURCE_SYNTHETIC:
                 surface.setTitle(int(frameRate) + " fps, Using Synthetic EEG Data");
+                break;
+            // af
+            case DATASOURCE_LSL:
+                surface.setTitle(int(frameRate) + " fps, Using LSL EEG Data");
                 break;
             case DATASOURCE_PLAYBACKFILE:
                 surface.setTitle(int(frameRate) + " fps, Playing " + getElapsedTimeInSeconds(currentTableRowIndex) + " of " + int(float(playbackData_table.getRowCount())/getSampleRateSafe()) + " secs, Reading from: " + playbackData_fname);

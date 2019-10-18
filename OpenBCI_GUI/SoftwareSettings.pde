@@ -127,7 +127,8 @@ class SoftwareSettings {
         "PlaybackUserSettings.json",
         "SynthFourUserSettings.json",
         "SynthEightUserSettings.json",
-        "SynthSixteenUserSettings.json"
+        "SynthSixteenUserSettings.json",
+        "LSLDefaultSettings.json"
         };
     final String[] defaultSettingsFiles = {
         "CytonDefaultSettings.json",
@@ -136,7 +137,8 @@ class SoftwareSettings {
         "PlaybackDefaultSettings.json",
         "SynthFourDefaultSettings.json",
         "SynthEightDefaultSettings.json",
-        "SynthSixteenDefaultSettings.json"
+        "SynthSixteenDefaultSettings.json",
+        "LSLDefaultSettings.json"
         };
 
     //Used to set text for Notch and BP filter settings
@@ -474,7 +476,9 @@ class SoftwareSettings {
         }
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //              Case for saving TS settings when in Ganglion, Synthetic, and Playback data modes                       //
-        if (eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_GANGLION) {
+        // af
+        if (eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_SYNTHETIC ||
+                eegDataSource == DATASOURCE_LSL || eegDataSource == DATASOURCE_GANGLION) {
             //Set up an array to store channel settings
             JSONArray saveTSSettingsJSONArray = new JSONArray();
             for (int i = 0; i < slnchan; i++) { //For all channels...
@@ -1093,7 +1097,9 @@ class SoftwareSettings {
                 }
                 break;
             case MARKER:
-                if ((cyton.isPortOpen() && eegDataSource == DATASOURCE_CYTON) || eegDataSource == DATASOURCE_SYNTHETIC) {
+                // af
+                if ((cyton.isPortOpen() && eegDataSource == DATASOURCE_CYTON) || eegDataSource == DATASOURCE_SYNTHETIC
+                        || eegDataSource == DATASOURCE_LSL) {
                     if (cyton.getBoardMode() != BoardMode.MARKER) {
                         cyton.setBoardMode(BoardMode.MARKER);
                         output("Starting to read markers");
@@ -1438,7 +1444,9 @@ class SoftwareSettings {
         } //end Cyton case
 
         //////////Case for loading Time Series settings when in Ganglion, Synthetic, or Playback data mode
-        if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_GANGLION) {
+        // af
+        if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_LSL ||
+                eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_GANGLION) {
             //get the channel settings first for only the number of channels being used
             if (eegDataSource == DATASOURCE_GANGLION) numChanloaded = 4;
             for (int i = 0; i < numChanloaded; i++) {
@@ -1489,9 +1497,10 @@ class SoftwareSettings {
       * @params mode="User"or"Default", dataSource, and number of channels
       * @returns {String} - filePath or Error if mode not specified correctly
       */
+    // af
     String getPath(String _mode, int dataSource, int _nchan) {
         String filePath = settingsPath;
-        String[] fileNames = new String[7];
+        String[] fileNames = new String[8];
         if (_mode.equals("Default")) {
             fileNames = defaultSettingsFiles;
         } else if (_mode.equals("User")) {
@@ -1506,7 +1515,7 @@ class SoftwareSettings {
                     fileNames[1];
             } else if (dataSource == DATASOURCE_GANGLION) {
                 filePath += fileNames[2];
-            } else if (dataSource ==  DATASOURCE_PLAYBACKFILE) {
+            } else if (dataSource == DATASOURCE_PLAYBACKFILE) {
                 filePath += fileNames[3];
             } else if (dataSource == DATASOURCE_SYNTHETIC) {
                 if (_nchan == NCHAN_GANGLION) {
@@ -1516,6 +1525,10 @@ class SoftwareSettings {
                 } else {
                     filePath += fileNames[6];
                 }
+            } else if (dataSource == DATASOURCE_LSL) {
+                // af
+                // assume 8 channels for now
+                filePath += fileNames[7];
             }
         }
         return filePath;
@@ -1541,7 +1554,8 @@ class SoftwareSettings {
             && errorUserSettingsNotFound == false
             && loadErrorCytonEvent == false) {
                 verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Settings Loaded! " + millis()); //Print success to console
-                if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE) {
+                // af
+                if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_LSL) {
                     outputSuccess("Settings Loaded!"); //Show success message for loading User Settings
                 }
         } else if (chanNumError) {

@@ -76,10 +76,12 @@ class W_MarkerMode extends Widget {
         localValidLastMarker =  hub.validLastMarker;  // make a local copy so it can be manipulated in SYNTHETIC mode
         hub.validLastMarker = 0;
 
-        if (eegDataSource == DATASOURCE_SYNTHETIC) {
+        // af
+        if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_LSL) {
             localValidLastMarker = synthesizeMarkerData();
         }
-        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_SYNTHETIC) {
+        if (eegDataSource == DATASOURCE_CYTON || eegDataSource == DATASOURCE_SYNTHETIC ||
+                eegDataSource == DATASOURCE_LSL) {
             if (isRunning && cyton.getBoardMode() == BoardMode.MARKER) {
                 if (localValidLastMarker > 0){
                     lastMarker = localValidLastMarker;  // this holds the last marker for the display
@@ -129,6 +131,11 @@ class W_MarkerMode extends Widget {
                 markerModeButton.setString("Turn Marker On");
                 markerModeButton.draw();
             } else if (eegDataSource == DATASOURCE_SYNTHETIC) {
+                markerModeButton.draw();
+                drawMarkerValues();
+                drawMarkerWave();
+            // af
+            } else if (eegDataSource == DATASOURCE_LSL) {
                 markerModeButton.draw();
                 drawMarkerValues();
                 drawMarkerWave();
@@ -187,7 +194,9 @@ class W_MarkerMode extends Widget {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
         if(markerModeButton.isActive && markerModeButton.isMouseHere()){
-            if((cyton.isPortOpen() && eegDataSource == DATASOURCE_CYTON) || eegDataSource == DATASOURCE_SYNTHETIC) {
+            // af
+            if((cyton.isPortOpen() && eegDataSource == DATASOURCE_CYTON) || eegDataSource == DATASOURCE_SYNTHETIC ||
+                    eegDataSource == DATASOURCE_LSL) {
                 if (cyton.getBoardMode() != BoardMode.MARKER) {
                     cyton.setBoardMode(BoardMode.MARKER);
                     output("Starting to read markers");

@@ -147,7 +147,9 @@ public void controlEvent(ControlEvent theEvent) {
 
         eegDataSource = newDataSource; // reset global eegDataSource to the selected value from the list
 
-        if (newDataSource != DATASOURCE_SYNTHETIC && newDataSource != DATASOURCE_PLAYBACKFILE && !hub.isHubRunning()) {
+        // af
+        if (newDataSource != DATASOURCE_SYNTHETIC && newDataSource != DATASOURCE_LSL &&
+            newDataSource != DATASOURCE_PLAYBACKFILE && !hub.isHubRunning()) {
             outputError("Unable to establish link to Hub. LIVE functionality will be disabled.");
             println("ControlEvent: Hub error");
             return;
@@ -196,6 +198,13 @@ public void controlEvent(ControlEvent theEvent) {
         } else if(newDataSource == DATASOURCE_PLAYBACKFILE){
             //GUI auto detects number of channels for playback when file is selected
         } else if(newDataSource == DATASOURCE_SYNTHETIC){
+            updateToNChan(8);
+            synthChanButton4.setColorNotPressed(colorNotPressed);
+            synthChanButton8.setColorNotPressed(isSelected_color);
+            synthChanButton16.setColorNotPressed(colorNotPressed);
+        } else if(newDataSource == DATASOURCE_LSL){
+            // af
+            // for now hardcoded to 8 channels
             updateToNChan(8);
             synthChanButton4.setColorNotPressed(colorNotPressed);
             synthChanButton8.setColorNotPressed(isSelected_color);
@@ -559,6 +568,9 @@ class ControlPanel {
             } else if (eegDataSource == DATASOURCE_SYNTHETIC) {  //synthetic
                 //set other CP5 controllers invisible
                 // hideAllBoxes();
+                synthChannelCountBox.draw();
+            } else if (eegDataSource == DATASOURCE_LSL) {  // Lab Streaming Layer
+                // af
                 synthChannelCountBox.draw();
             } else if (eegDataSource == DATASOURCE_GANGLION) {
                 if(!hub.isHubRunning()) {
@@ -1087,6 +1099,34 @@ class ControlPanel {
 
             //active buttons during DATASOURCE_SYNTHETIC
             if (eegDataSource == DATASOURCE_SYNTHETIC) {
+                if (synthChanButton4.isMouseHere()) {
+                    synthChanButton4.setIsActive(true);
+                    synthChanButton4.wasPressed = true;
+                    synthChanButton4.setColorNotPressed(isSelected_color);
+                    synthChanButton8.setColorNotPressed(colorNotPressed); //default color of button
+                    synthChanButton16.setColorNotPressed(colorNotPressed); //default color of button
+                }
+
+                if (synthChanButton8.isMouseHere()) {
+                    synthChanButton8.setIsActive(true);
+                    synthChanButton8.wasPressed = true;
+                    synthChanButton8.setColorNotPressed(isSelected_color);
+                    synthChanButton4.setColorNotPressed(colorNotPressed); //default color of button
+                    synthChanButton16.setColorNotPressed(colorNotPressed); //default color of button
+                }
+
+                if (synthChanButton16.isMouseHere()) {
+                    synthChanButton16.setIsActive(true);
+                    synthChanButton16.wasPressed = true;
+                    synthChanButton16.setColorNotPressed(isSelected_color);
+                    synthChanButton4.setColorNotPressed(colorNotPressed); //default color of button
+                    synthChanButton8.setColorNotPressed(colorNotPressed); //default color of button
+                }
+            }
+
+            // af
+            //active buttons during DATASOURCE_LSL
+            if (eegDataSource == DATASOURCE_LSL) {
                 if (synthChanButton4.isMouseHere()) {
                     synthChanButton4.setIsActive(true);
                     synthChanButton4.wasPressed = true;
@@ -1659,7 +1699,9 @@ public void initButtonPressed(){
                 sessionName = cp5.get(Textfield.class, "fileNameGanglion").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
             }
 
-            if (outputDataSource == OUTPUT_SOURCE_ODF && eegDataSource < DATASOURCE_PLAYBACKFILE) {
+            // af
+            if (outputDataSource == OUTPUT_SOURCE_ODF && eegDataSource < DATASOURCE_PLAYBACKFILE &&
+                eegDataSource != DATASOURCE_LSL) {
                 settings.setLogFileMaxDuration();
             }
 
