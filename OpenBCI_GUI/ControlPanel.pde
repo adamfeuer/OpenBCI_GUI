@@ -1733,10 +1733,12 @@ class NoHubBox {
     }
 };
 
+// af
 class DataSourceBox {
     int x, y, w, h, padding; //size and position
     int numItems = 4;
-    int boxHeight = 24;
+    //int boxHeight = 24;
+    int boxHeight = 30;
     int spacing = 43;
 
 
@@ -1755,10 +1757,13 @@ class DataSourceBox {
         sourceList.setPosition(x + padding, y + padding*2 + 13);
         sourceList.addItem(makeItem("LIVE (from Cyton)"));
         sourceList.addItem(makeItem("LIVE (from Ganglion)"));
+        // af
+        sourceList.addItem(makeItem("LIVE (from Lab Streaming Layer)"));
         sourceList.addItem(makeItem("PLAYBACK (from file)"));
         sourceList.addItem(makeItem("SYNTHETIC (algorithmic)"));
 
         sourceList.scrollerLength = 10;
+        //sourceList.scrollerLength = 20;
     }
 
     public void update() {

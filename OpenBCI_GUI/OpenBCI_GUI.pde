@@ -87,8 +87,10 @@ UDP udpRX;
 //choose where to get the EEG data
 final int DATASOURCE_CYTON = 0; // new default, data from serial with Accel data CHIP 2014-11-03
 final int DATASOURCE_GANGLION = 1;  //looking for signal from OpenBCI board via Serial/COM port, no Aux data
-final int DATASOURCE_PLAYBACKFILE = 2;  //playback from a pre-recorded text file
-final int DATASOURCE_SYNTHETIC = 3;  //Synthetically generated data
+// af
+final int DATASOURCE_LSL = 2;  // take input from Lab Streaming Layer
+final int DATASOURCE_PLAYBACKFILE = 3;  //playback from a pre-recorded text file
+final int DATASOURCE_SYNTHETIC = 4;  //Synthetically generated data
 public int eegDataSource = -1; //default to none of the options
 
 final int INTERFACE_NONE = -1; // Used to indicate no choice made yet on interface
