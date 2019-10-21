@@ -91,7 +91,7 @@ int getDataIfAvailable(int pointCounter) {
                     break;
                 // af
                 case DATASOURCE_LSL : //use synthetic data (for GUI debugging) (will be LSL eventually)
-                    synthesizeData(nchan, getSampleRateSafe(), cyton.get_scale_fac_uVolts_per_count(), dataPacketBuff[lastReadDataPacketInd]);
+                    getDataFromLsl(nchan, getSampleRateSafe(), cyton.get_scale_fac_uVolts_per_count(), dataPacketBuff[lastReadDataPacketInd]);
                     break;
                 case DATASOURCE_PLAYBACKFILE:
                     currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
@@ -218,6 +218,32 @@ void synthesizeData(int nchan, float fs_Hz, float scale_fac_uVolts_per_count, Da
         curDataPacket.values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
     }
 }
+
+// af
+void getDataFromLsl(int nchan, float fs_Hz, float scale_fac_uVolts_per_count, DataPacket_ADS1299 curDataPacket) {
+    float val_uV;
+    float[] sample;
+    if (lslInlet != null) {
+        try {
+            sample = new float[lslChannelCount];
+			lslInlet.pull_sample(sample);
+            for (int Ichan=0; Ichan < lslChannelCount; Ichan++) {
+                if (isChannelActive(Ichan)) {
+                   val_uV = sample[Ichan];
+                    println("LSL: channel reading: " + val_uV);
+                } else {
+                    println("LSL: inactive channel: " + Ichan);
+                    val_uV = 0.0f;
+                }
+                curDataPacket.values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
+            }
+        }
+        catch(Exception e) {
+          println("LSL: error reading from stream!");
+        }
+    }
+}
+
 
 //some data initialization routines
 void prepareData(float[] dataBuffX, float[][] dataBuffY_uV, float fs_Hz) {

@@ -274,6 +274,11 @@ char[][] impedanceCheckValues = new char [nchan][2];
 
 SoftwareSettings settings = new SoftwareSettings();
 
+// af
+// Lab Streaming Layer
+LSL.StreamInlet lslInlet = null;
+int lslChannelCount = 0;
+
 //------------------------------------------------------------------------
 //                       Global Functions
 //------------------------------------------------------------------------
@@ -763,7 +768,16 @@ void initSystem() throws Exception {
             break;
         // af
         case DATASOURCE_LSL:
-            //do nothing (will eventually be LSL)
+            // create LSL input stream
+			println("Resolving an EEG stream...");
+			LSL.StreamInfo[] results = LSL.resolve_stream("type","EEG");
+			println("Resolved LSL EEG stream: " + Arrays.toString(results));
+			// activate input channels
+			lslInlet = new LSL.StreamInlet(results[0]);
+            lslChannelCount = lslInlet.info().channel_count();
+            for (int i = 0; i < lslChannelCount; i++) {
+                activateChannel(i);
+            }
             break;
         case DATASOURCE_PLAYBACKFILE:
             break;
