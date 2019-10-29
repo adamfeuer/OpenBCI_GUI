@@ -51,7 +51,7 @@ int getDataIfAvailable(int pointCounter) {
         //next, gather any new data into the "little buffer"
         while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
             lastReadDataPacketInd = (lastReadDataPacketInd+1) % dataPacketBuff.length;  //increment to read the next packet
-            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
+            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each channel
                 //scale the data into engineering units ("microvolts") and save to the "little buffer"
                 yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * cyton.get_scale_fac_uVolts_per_count();
             }
@@ -63,12 +63,26 @@ int getDataIfAvailable(int pointCounter) {
         //next, gather any new data into the "little buffer"
         while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
             lastReadDataPacketInd = (lastReadDataPacketInd + 1) % dataPacketBuff.length;  //increment to read the next packet
-            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each cahnnel
+            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each channel
                 //scale the data into engineering units ("microvolts") and save to the "little buffer"
                 yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * ganglion.get_scale_fac_uVolts_per_count();
             }
             pointCounter++; //increment counter for "little buffer"
         }
+
+    // af  LSL Input
+    } else if (eegDataSource == DATASOURCE_LSL) {
+        //get data from LSL as it streams in
+        //next, gather any new data into the "little buffer"
+        while ( (curDataPacketInd != lastReadDataPacketInd) && (pointCounter < nPointsPerUpdate)) {
+            lastReadDataPacketInd = (lastReadDataPacketInd + 1) % dataPacketBuff.length;  //increment to read the next packet
+            for (int Ichan=0; Ichan < nchan; Ichan++) {   //loop over each channel
+                //scale the data into engineering units ("microvolts") and save to the "little buffer"
+                yLittleBuff_uV[Ichan][pointCounter] = dataPacketBuff[lastReadDataPacketInd].values[Ichan] * ganglion.get_scale_fac_uVolts_per_count();
+            }
+            pointCounter++; //increment counter for "little buffer"
+        }
+
 
     } else {
         // make or load data to simulate real time
@@ -88,10 +102,6 @@ int getDataIfAvailable(int pointCounter) {
                 switch (eegDataSource) {
                 case DATASOURCE_SYNTHETIC: //use synthetic data (for GUI debugging)
                     synthesizeData(nchan, getSampleRateSafe(), cyton.get_scale_fac_uVolts_per_count(), dataPacketBuff[lastReadDataPacketInd]);
-                    break;
-                // af
-                case DATASOURCE_LSL : //use synthetic data (for GUI debugging) (will be LSL eventually)
-                    getDataFromLsl(nchan, getSampleRateSafe(), cyton.get_scale_fac_uVolts_per_count(), dataPacketBuff[lastReadDataPacketInd]);
                     break;
                 case DATASOURCE_PLAYBACKFILE:
                     currentTableRowIndex=getPlaybackDataFromTable(playbackData_table, currentTableRowIndex, cyton.get_scale_fac_uVolts_per_count(), cyton.get_scale_fac_accel_G_per_count(), dataPacketBuff[lastReadDataPacketInd]);
@@ -218,32 +228,6 @@ void synthesizeData(int nchan, float fs_Hz, float scale_fac_uVolts_per_count, Da
         curDataPacket.values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
     }
 }
-
-// af
-void getDataFromLsl(int nchan, float fs_Hz, float scale_fac_uVolts_per_count, DataPacket_ADS1299 curDataPacket) {
-    float val_uV;
-    float[] sample;
-    if (lslInlet != null) {
-        try {
-            sample = new float[lslChannelCount];
-			lslInlet.pull_sample(sample);
-            for (int Ichan=0; Ichan < lslChannelCount; Ichan++) {
-                if (isChannelActive(Ichan)) {
-                   val_uV = sample[Ichan];
-                    println("LSL: channel reading: " + val_uV);
-                } else {
-                    println("LSL: inactive channel: " + Ichan);
-                    val_uV = 0.0f;
-                }
-                curDataPacket.values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
-            }
-        }
-        catch(Exception e) {
-          println("LSL: error reading from stream!");
-        }
-    }
-}
-
 
 //some data initialization routines
 void prepareData(float[] dataBuffX, float[][] dataBuffY_uV, float fs_Hz) {

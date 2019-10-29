@@ -1,5 +1,4 @@
 
-///////////////////////////////////////////////////////////////////////////////
 //
 //   GUI for controlling the ADS1299-based OpenBCI
 //
@@ -275,9 +274,9 @@ char[][] impedanceCheckValues = new char [nchan][2];
 SoftwareSettings settings = new SoftwareSettings();
 
 // af
-// Lab Streaming Layer
-LSL.StreamInlet lslInlet = null;
-int lslChannelCount = 0;
+// LSL stream class
+LslStream lslStream = null;
+
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -749,9 +748,9 @@ void initSystem() throws Exception {
     // hub.searchDeviceStop();
 
     //prepare the source of the input data
+    int nEEDataValuesPerPacket = nchan;
     switch (eegDataSource) {
         case DATASOURCE_CYTON:
-            int nEEDataValuesPerPacket = nchan;
             boolean useAux = true;
             if (cyton.getInterface() == INTERFACE_SERIAL) {
                 cyton = new Cyton(this, openBCI_portName, openBCI_baud, nEEDataValuesPerPacket, useAux, n_aux_ifEnabled, cyton.getInterface()); //this also starts the data transfer after XX seconds
@@ -768,16 +767,10 @@ void initSystem() throws Exception {
             break;
         // af
         case DATASOURCE_LSL:
-            // create LSL input stream
-			println("Resolving an EEG stream...");
-			LSL.StreamInfo[] results = LSL.resolve_stream("type","EEG");
-			println("Resolved LSL EEG stream: " + Arrays.toString(results));
-			// activate input channels
-			lslInlet = new LSL.StreamInlet(results[0]);
-            lslChannelCount = lslInlet.info().channel_count();
-            for (int i = 0; i < lslChannelCount; i++) {
-                activateChannel(i);
-            }
+            // af
+            lslStream = new LslStream(ourApplet, nEEDataValuesPerPacket, n_aux_ifEnabled);
+            lslStream.connectToEegStream();
+            thread("lslThread");
             break;
         case DATASOURCE_PLAYBACKFILE:
             break;
@@ -1021,8 +1014,8 @@ void stopButtonWasPressed() {
             ganglion.impedanceStop();
         }
         // af
-        if (outputDataSource > OUTPUT_SOURCE_NONE && eegDataSource < DATASOURCE_PLAYBACKFILE &&
-            eegDataSource != DATASOURCE_LSL) {
+        if (outputDataSource > OUTPUT_SOURCE_NONE && eegDataSource < DATASOURCE_PLAYBACKFILE)
+            {
             //open data file if it has not already been opened
             if (!settings.isLogFileOpen()) {
                 if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(getDateString());
