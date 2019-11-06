@@ -31,7 +31,9 @@ class LslStream {
     private DataPacket_ADS1299 dataPacket;
 
     private final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
-    private float ADS1299_gain = 24.0;  //assumed gain setting for ADS1299.  set by its Arduino code
+//    private float ADS1299_gain = 24.0;  //assumed gain setting for ADS1299.  set by its Arduino code
+    private float ADS1299_gain = 1.0;  //assumed gain setting for ADS1299.  set by its Arduino code
+//    private float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2, 23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
     private float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2, 23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
     private final float scale_fac_accel_G_per_count = 0.002 / ((float)pow(2, 4));  //assume set to +/4G, so 2 mG per digit (datasheet). Account for 4 bits unused
     private final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
@@ -173,7 +175,8 @@ class LslStream {
                             println("LSL: inactive channel: " + Ichan);
                             val_uV = 0.0f;
                         }
-                        dataPacketBuff[curDataPacketInd].values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
+//                        dataPacketBuff[curDataPacketInd].values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
+                        dataPacketBuff[curDataPacketInd].values[Ichan] = (int) val_uV;
                     }
                 sample_capture_time = lslInlet.pull_sample(sample);
                 }
