@@ -31,9 +31,8 @@ class LslStream {
     private DataPacket_ADS1299 dataPacket;
 
     private final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
-//    private float ADS1299_gain = 24.0;  //assumed gain setting for ADS1299.  set by its Arduino code
-    private float ADS1299_gain = 1.0;  //assumed gain setting for ADS1299.  set by its Arduino code
-//    private float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2, 23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
+    private float ADS1299_gain = 24.0;  //assumed gain setting for ADS1299.  set by its Arduino code
+//    private float ADS1299_gain = 1.0;  //assumed gain setting for ADS1299.  set by its Arduino code
     private float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2, 23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
     private final float scale_fac_accel_G_per_count = 0.002 / ((float)pow(2, 4));  //assume set to +/4G, so 2 mG per digit (datasheet). Account for 4 bits unused
     private final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
@@ -45,7 +44,7 @@ class LslStream {
 
     public float getSampleRate() {
         // TODO return computed LSL sample rate
-        return 0.0;
+        return 500.0;
     }
 
     public float get_scale_fac_uVolts_per_count() {
@@ -79,6 +78,20 @@ class LslStream {
         } catch (Exception e) {
             println("Error getting LSL stream info.");
         }
+    }
+
+    public void disconnectFromEegStream() {
+        println("Disconnecting from EEG stream...");
+        // deactivate input channels
+        try {
+            lslChannelCount = lslInlet.info().channel_count();
+            for (int i = 0; i < lslChannelCount; i++) {
+                deactivateChannel(i);
+                }
+        } catch (Exception e) {
+            println("Error getting LSL stream info.");
+        }
+        lslInlet = null;
     }
 
     public void initDataPackets(int _nEEGValuesPerPacket, int _nAuxValuesPerPacket) {
@@ -118,20 +131,13 @@ class LslStream {
 
 
     public void startDataTransfer() {
-        // TODO connect to LSL stream?
     }
 
     public void stopDataTransfer() {
-        // TODO disconnect from LSL stream?
     }
 
     public void printRegisters() {
         // TODO print registers?
-    }
-
-    private boolean isPortOpen() {
-        // TODO is LSL stream active?
-        return false;
     }
 
     //activate or deactivate an EEG channel...channel counting is zero through nchan-1
@@ -157,8 +163,8 @@ class LslStream {
     void getDataFromLslStream(int nchan) {
         float val_uV;
         float[] sample;
-        println("LSL: nchan: " + nchan);
-        println("LSL channel count: " + lslChannelCount);
+//        println("LSL: nchan: " + nchan);
+//        println("LSL channel count: " + lslChannelCount);
         if (lslInlet != null) {
             try {
                 sample = new float[lslChannelCount];
@@ -166,17 +172,19 @@ class LslStream {
                 sample_capture_time = lslInlet.pull_sample(sample);
                 while (sample_capture_time != 0.0) {
                     curDataPacketInd = (curDataPacketInd + 1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
-                    println("sample capture time: " + sample_capture_time);
+//                    println("sample capture time: " + sample_capture_time);
                     for (int Ichan=0; Ichan < lslChannelCount; Ichan++) {
                         if (isChannelActive(Ichan)) {
                             val_uV = sample[Ichan];
-                            println("LSL: channel " + Ichan + " reading: " + val_uV);
+//                            println("LSL: channel " + Ichan + " reading: " + val_uV);
                         } else {
-                            println("LSL: inactive channel: " + Ichan);
+//                            println("LSL: inactive channel: " + Ichan);
                             val_uV = 0.0f;
                         }
 //                        dataPacketBuff[curDataPacketInd].values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
+                         // gain 1x
                         dataPacketBuff[curDataPacketInd].values[Ichan] = (int) val_uV;
+//                        dataPacketBuff[curDataPacketInd].values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
                     }
                 sample_capture_time = lslInlet.pull_sample(sample);
                 }

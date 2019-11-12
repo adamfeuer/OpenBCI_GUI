@@ -946,39 +946,57 @@ void initFFTObjectsAndBuffer() {
     }
 }
 
+// af
 void startRunning() {
     verbosePrint("startRunning...");
     output("Data stream started.");
-    if (eegDataSource == DATASOURCE_GANGLION) {
-        if (ganglion != null) {
-            ganglion.startDataTransfer();
-        }
-    } else if (eegDataSource == DATASOURCE_CYTON) {
-        if (cyton != null) {
-            cyton.startDataTransfer();
-        }
+    switch (eegDataSource) {
+        case DATASOURCE_GANGLION:
+            if (ganglion != null) {
+                ganglion.startDataTransfer();
+            }
+            break;
+        case DATASOURCE_CYTON:
+            if (cyton != null) {
+                cyton.startDataTransfer();
+            }
+            break;
+        case DATASOURCE_LSL:
+            if (lslStream != null) {
+                lslStream.startDataTransfer();
+            }
+            break;
     }
     isRunning = true;
 }
 
+// af
 void stopRunning() {
-    // openBCI.changeState(0); //make sure it's no longer interpretting as binary
+    // openBCI.changeState(0); //make sure it's no longer interpreting as binary
     verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
     if (isRunning) {
         output("Data stream stopped.");
     }
-    if (eegDataSource == DATASOURCE_GANGLION) {
-        if (ganglion != null) {
-            ganglion.stopDataTransfer();
-        }
-    } else {
-        if (cyton != null) {
-            cyton.stopDataTransfer();
-        }
+    switch (eegDataSource) {
+        case DATASOURCE_GANGLION:
+            if (ganglion != null) {
+                ganglion.stopDataTransfer();
+            }
+            break;
+        case DATASOURCE_CYTON:
+            if (cyton != null) {
+                cyton.stopDataTransfer();
+            }
+            break;
+        case DATASOURCE_LSL:
+            if (lslStream != null) {
+                lslStream.stopDataTransfer();
+            }
+            break;
     }
 
     isRunning = false;
-    // openBCI.changeState(0); //make sure it's no longer interpretting as binary
+    // openBCI.changeState(0); //make sure it's no longer interpreting as binary
     // systemMode = 0;
     // closeLogFile();
 }
