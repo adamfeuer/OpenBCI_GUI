@@ -91,7 +91,22 @@ class LslStream {
 
     public void disconnectFromEegStream() {
         synchronized (this) {
-            println("LSL: setting active to False...");
+            this.active = false;
+            lslInlet = null;
+        }
+    }
+
+    public void resumeEegStream() {
+        synchronized (this) {
+            if (lslInlet == null) {
+                connectToEegStream();
+            }
+            this.active = true;
+        }
+    }
+
+    public void pauseEegStream() {
+        synchronized (this) {
             this.active = false;
         }
     }
@@ -154,12 +169,12 @@ class LslStream {
 
     public void startDataTransfer() {
         println("LSL: connecting to EEG stream.");
-        connectToEegStream();
+        resumeEegStream();
     }
 
     public void stopDataTransfer() {
         println("LSL: disconnecting from EEG stream.");
-        disconnectFromEegStream();
+        pauseEegStream();
     }
 
     public void printRegisters() {
