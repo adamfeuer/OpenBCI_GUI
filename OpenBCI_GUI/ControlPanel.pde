@@ -1699,9 +1699,7 @@ public void initButtonPressed(){
                 sessionName = cp5.get(Textfield.class, "fileNameGanglion").getText(); // store the current text field value of "File Name" to be passed along to dataFiles
             }
 
-            // af
-            if (outputDataSource == OUTPUT_SOURCE_ODF && eegDataSource < DATASOURCE_PLAYBACKFILE &&
-                eegDataSource != DATASOURCE_LSL) {
+            if (outputDataSource == OUTPUT_SOURCE_ODF && eegDataSource < DATASOURCE_PLAYBACKFILE) {
                 settings.setLogFileMaxDuration();
             }
 

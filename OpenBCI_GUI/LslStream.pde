@@ -2,7 +2,7 @@
 //
 // This class configures and manages the connection to Lab Streaming Layer.
 // LSL input enables OpenBCI to take input from a remote OpenBCI, or other
-// kinds of hardware
+// kinds of hardware.
 //
 // Created: Adam Feuer, 2019
 //
@@ -11,8 +11,13 @@
 int LSL_DELAY_MILLISECONDS = 30;
 
 void lslThread() {
+    println("LSL: lslThread");
     if (lslStream != null) {
-        lslStream.getDataFromLslStream(nchan);
+        println("LSL: lslStream != null");
+        if (lslStream.streamIsActive()) {
+            println("LSL: lslStream is active");
+            lslStream.getDataFromLslStream(nchan);
+        }
     }
     delay(LSL_DELAY_MILLISECONDS);
 }
@@ -40,7 +45,9 @@ class LslStream {
     private int sampleRate = 0;  // will be updated dynamically by examining the LSL stream
 
     private LSL.StreamInlet lslInlet = null;
-    int lslChannelCount = 0;
+    private boolean active = false;
+
+    private int lslChannelCount = 0;
 
     public float getSampleRate() {
         // TODO return computed LSL sample rate
@@ -61,37 +68,52 @@ class LslStream {
     LslStream() {};  //only use this if you simply want access to some of the constants
     LslStream(PApplet applet, int nEEGValuesPerOpenBCI, int nAuxValuesPerOpenBCI) {
         initDataPackets(nEEGValuesPerOpenBCI, nAuxValuesPerOpenBCI);
+        systemMode = SYSTEMMODE_POSTINIT;
     }
 
     public void connectToEegStream() {
         // create LSL input stream
-        println("Resolving an EEG stream...");
-        LSL.StreamInfo[] results = LSL.resolve_stream("type","EEG");
-        println("Resolved LSL EEG stream: " + Arrays.toString(results));
-        // activate input channels
-        lslInlet = new LSL.StreamInlet(results[0]);
-        try {
-            lslChannelCount = lslInlet.info().channel_count();
-            for (int i = 0; i < lslChannelCount; i++) {
-                activateChannel(i);
-                }
-        } catch (Exception e) {
-            println("Error getting LSL stream info.");
+        synchronized (this) {
+            println("LSL: Resolving an EEG stream...");
+            LSL.StreamInfo[] results = LSL.resolve_stream("type","EEG");
+            println("LSL: Resolved LSL EEG stream: " + Arrays.toString(results));
+            lslInlet = new LSL.StreamInlet(results[0]);
+            try {
+                lslChannelCount = lslInlet.info().channel_count();
+            } catch (Exception e) {
+                println("LSL: Error getting LSL stream info.");
+                abandonInit = true;
+            }
+            this.active = true;
+            abandonInit = false;
         }
     }
 
     public void disconnectFromEegStream() {
-        println("Disconnecting from EEG stream...");
-        // deactivate input channels
-        try {
-            lslChannelCount = lslInlet.info().channel_count();
-            for (int i = 0; i < lslChannelCount; i++) {
-                deactivateChannel(i);
-                }
-        } catch (Exception e) {
-            println("Error getting LSL stream info.");
+        synchronized (this) {
+            println("LSL: setting active to False...");
+            this.active = false;
         }
-        lslInlet = null;
+    }
+
+    public int getLslChannelCount() {
+        return lslChannelCount;
+    }
+
+    public boolean streamIsActive() {
+        return this.getActive();
+    }
+
+    public void setActive(boolean active) {
+        synchronized (this) {
+            this.active = active;
+        }
+    }
+
+    public boolean getActive() {
+        synchronized (this) {
+            return this.active;
+        }
     }
 
     public void initDataPackets(int _nEEGValuesPerPacket, int _nAuxValuesPerPacket) {
@@ -131,9 +153,13 @@ class LslStream {
 
 
     public void startDataTransfer() {
+        println("LSL: connecting to EEG stream.");
+        connectToEegStream();
     }
 
     public void stopDataTransfer() {
+        println("LSL: disconnecting from EEG stream.");
+        disconnectFromEegStream();
     }
 
     public void printRegisters() {
@@ -157,15 +183,17 @@ class LslStream {
 
     public void configureAllChannelsToDefault() {
         // TODO change channel state?
-    };
+    }
 
     // af
     void getDataFromLslStream(int nchan) {
         float val_uV;
         float[] sample;
+        println("LSL: getDataFromLslStream.");
 //        println("LSL: nchan: " + nchan);
 //        println("LSL channel count: " + lslChannelCount);
-        if (lslInlet != null) {
+        if (this.streamIsActive()) {
+            println("LSL: getDataFromLslStream, stream is active.");
             try {
                 sample = new float[lslChannelCount];
                 double sample_capture_time = 0.0;
@@ -191,9 +219,12 @@ class LslStream {
             }
             catch(Exception e) {
               println("LSL: error reading from stream!");
+              e.printStackTrace();
+            }
+        } else {
+            for (int Ichan=0; Ichan < nchan; Ichan++) {
+                dataPacketBuff[curDataPacketInd].values[Ichan] = 0;
             }
         }
     }
-
-
 };

@@ -110,6 +110,7 @@ int nextPlayback_millis = -100; //any negative number
 // Initialize boards for constants
 Cyton cyton = new Cyton(); //dummy creation to get access to constants, create real one later
 Ganglion ganglion = new Ganglion(); //dummy creation to get access to constants, create real one later
+volatile LslStream lslStream = new LslStream(); //dummy creation to get access to constants, create real one later
 // Intialize interface protocols
 InterfaceSerial iSerial = new InterfaceSerial();
 Hub hub = new Hub(); //dummy creation to get access to constants, create real one later
@@ -272,11 +273,6 @@ char[][] channelSettingValues = new char [nchan][numSettingsPerChannel]; // [cha
 char[][] impedanceCheckValues = new char [nchan][2];
 
 SoftwareSettings settings = new SoftwareSettings();
-
-// af
-// LSL stream class
-LslStream lslStream = null;
-
 
 //------------------------------------------------------------------------
 //                       Global Functions
@@ -769,7 +765,7 @@ void initSystem() throws Exception {
         case DATASOURCE_LSL:
             // af
             lslStream = new LslStream(ourApplet, nEEDataValuesPerPacket, n_aux_ifEnabled);
-            lslStream.connectToEegStream();
+            lslStream.startDataTransfer();
             thread("lslThread");
             break;
         case DATASOURCE_PLAYBACKFILE:
@@ -805,7 +801,7 @@ void initSystem() throws Exception {
             nextPlayback_millis = millis(); //used for synthesizeData and readFromFile.  This restarts the clock that keeps the playback at the right pace.
             w_timeSeries.hsc.loadDefaultChannelSettings();
 
-            if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_CYTON) {
+            if (eegDataSource != DATASOURCE_GANGLION && eegDataSource != DATASOURCE_CYTON && eegDataSource != DATASOURCE_LSL) {
                 systemMode = SYSTEMMODE_POSTINIT; //tell system it's ok to leave control panel and start interfacing GUI
             }
             if (!abandonInit) {
@@ -871,6 +867,8 @@ float getSampleRateSafe() {
         return ganglion.getSampleRate();
     } else if (eegDataSource == DATASOURCE_CYTON) {
         return cyton.getSampleRate();
+    } else if (eegDataSource == DATASOURCE_LSL) {
+        return lslStream.getSampleRate();
     } else if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
         return playbackData_table.getSampleRate();
     } else {
@@ -962,6 +960,7 @@ void startRunning() {
             }
             break;
         case DATASOURCE_LSL:
+            println("LSL: about to connect to EEG stream.");
             if (lslStream != null) {
                 lslStream.startDataTransfer();
             }
@@ -989,6 +988,7 @@ void stopRunning() {
             }
             break;
         case DATASOURCE_LSL:
+            println("LSL: about to stop EEG data transfer.");
             if (lslStream != null) {
                 lslStream.stopDataTransfer();
             }
@@ -1038,6 +1038,7 @@ void stopButtonWasPressed() {
             if (!settings.isLogFileOpen()) {
                 if (eegDataSource == DATASOURCE_CYTON) openNewLogFile(getDateString());
                 if (eegDataSource == DATASOURCE_GANGLION) openNewLogFile(getDateString());
+                if (eegDataSource == DATASOURCE_LSL) openNewLogFile(getDateString());
             }
             settings.setLogFileStartTime(System.nanoTime());
         }
