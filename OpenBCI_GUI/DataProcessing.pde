@@ -70,7 +70,6 @@ int getDataIfAvailable(int pointCounter) {
             pointCounter++; //increment counter for "little buffer"
         }
 
-    // af  LSL Input
     } else if (eegDataSource == DATASOURCE_LSL) {
         //get data from LSL as it streams in
         //next, gather any new data into the "little buffer"

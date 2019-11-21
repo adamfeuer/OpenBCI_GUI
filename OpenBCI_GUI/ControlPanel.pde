@@ -147,7 +147,6 @@ public void controlEvent(ControlEvent theEvent) {
 
         eegDataSource = newDataSource; // reset global eegDataSource to the selected value from the list
 
-        // af
         if (newDataSource != DATASOURCE_SYNTHETIC && newDataSource != DATASOURCE_LSL &&
             newDataSource != DATASOURCE_PLAYBACKFILE && !hub.isHubRunning()) {
             outputError("Unable to establish link to Hub. LIVE functionality will be disabled.");
@@ -203,7 +202,6 @@ public void controlEvent(ControlEvent theEvent) {
             synthChanButton8.setColorNotPressed(isSelected_color);
             synthChanButton16.setColorNotPressed(colorNotPressed);
         } else if(newDataSource == DATASOURCE_LSL){
-            // af
             // for now hardcoded to 8 channels
             updateToNChan(8);
             synthChanButton4.setColorNotPressed(colorNotPressed);
@@ -570,7 +568,6 @@ class ControlPanel {
                 // hideAllBoxes();
                 synthChannelCountBox.draw();
             } else if (eegDataSource == DATASOURCE_LSL) {  // Lab Streaming Layer
-                // af
                 synthChannelCountBox.draw();
             } else if (eegDataSource == DATASOURCE_GANGLION) {
                 if(!hub.isHubRunning()) {
@@ -1124,7 +1121,6 @@ class ControlPanel {
                 }
             }
 
-            // af
             //active buttons during DATASOURCE_LSL
             if (eegDataSource == DATASOURCE_LSL) {
                 if (synthChanButton4.isMouseHere()) {
@@ -1773,7 +1769,6 @@ class NoHubBox {
     }
 };
 
-// af
 class DataSourceBox {
     int x, y, w, h, padding; //size and position
     int numItems = 4;
@@ -1797,7 +1792,6 @@ class DataSourceBox {
         sourceList.setPosition(x + padding, y + padding*2 + 13);
         sourceList.addItem(makeItem("LIVE (from Cyton)"));
         sourceList.addItem(makeItem("LIVE (from Ganglion)"));
-        // af
         sourceList.addItem(makeItem("LIVE (from Lab Streaming Layer)"));
         sourceList.addItem(makeItem("PLAYBACK (from file)"));
         sourceList.addItem(makeItem("SYNTHETIC (algorithmic)"));

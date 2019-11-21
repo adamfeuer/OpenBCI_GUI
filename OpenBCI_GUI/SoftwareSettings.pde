@@ -476,7 +476,6 @@ class SoftwareSettings {
         }
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //              Case for saving TS settings when in Ganglion, Synthetic, and Playback data modes                       //
-        // af
         if (eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_SYNTHETIC ||
                 eegDataSource == DATASOURCE_LSL || eegDataSource == DATASOURCE_GANGLION) {
             //Set up an array to store channel settings
@@ -1097,7 +1096,6 @@ class SoftwareSettings {
                 }
                 break;
             case MARKER:
-                // af
                 if ((cyton.isPortOpen() && eegDataSource == DATASOURCE_CYTON) || eegDataSource == DATASOURCE_SYNTHETIC
                         || eegDataSource == DATASOURCE_LSL) {
                     if (cyton.getBoardMode() != BoardMode.MARKER) {
@@ -1444,7 +1442,6 @@ class SoftwareSettings {
         } //end Cyton case
 
         //////////Case for loading Time Series settings when in Ganglion, Synthetic, or Playback data mode
-        // af
         if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_LSL ||
                 eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_GANGLION) {
             //get the channel settings first for only the number of channels being used
@@ -1497,7 +1494,6 @@ class SoftwareSettings {
       * @params mode="User"or"Default", dataSource, and number of channels
       * @returns {String} - filePath or Error if mode not specified correctly
       */
-    // af
     String getPath(String _mode, int dataSource, int _nchan) {
         String filePath = settingsPath;
         String[] fileNames = new String[8];
@@ -1526,7 +1522,6 @@ class SoftwareSettings {
                     filePath += fileNames[6];
                 }
             } else if (dataSource == DATASOURCE_LSL) {
-                // af
                 // assume 8 channels for now
                 filePath += fileNames[7];
             }
@@ -1554,7 +1549,6 @@ class SoftwareSettings {
             && errorUserSettingsNotFound == false
             && loadErrorCytonEvent == false) {
                 verbosePrint("OpenBCI_GUI: initSystem: -- Init 5 -- " + "Settings Loaded! " + millis()); //Print success to console
-                // af
                 if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_PLAYBACKFILE || eegDataSource == DATASOURCE_LSL) {
                     outputSuccess("Settings Loaded!"); //Show success message for loading User Settings
                 }

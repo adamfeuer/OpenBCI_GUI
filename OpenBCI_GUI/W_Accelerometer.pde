@@ -151,7 +151,6 @@ class W_Accelerometer extends Widget {
         for (int i = 0; i < NUM_ACCEL_DIMS; i++) {
             if (eegDataSource == DATASOURCE_SYNTHETIC) {
                 synthesizeAccelData();
-                // af
                 // will eventually be LSL accel stream
             } else if (eegDataSource == DATASOURCE_LSL) {
                 synthesizeAccelData();
@@ -565,7 +564,6 @@ class AccelerometerBar {
                 case DATASOURCE_SYNTHETIC: //use synthetic data (for GUI debugging)
                     numSamplesToProcess = 1;
                     break;
-                // af
                 case DATASOURCE_LSL: //use synthetic data (for GUI debugging) (will eventually be LSL)
                     numSamplesToProcess = 1;
                     break;
@@ -606,7 +604,6 @@ class AccelerometerBar {
     void setGPlotPoints(int accelBuffSize) {
         //println("UPDATING ACCEL GRAPH");
         int accelBuffDiff = accelBuffSize - nPoints;
-        // af
         if (numSamplesToProcess > 0 || eegDataSource == DATASOURCE_SYNTHETIC ||
                 eegDataSource == DATASOURCE_LSL) {
             try {

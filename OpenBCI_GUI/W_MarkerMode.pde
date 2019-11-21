@@ -76,7 +76,6 @@ class W_MarkerMode extends Widget {
         localValidLastMarker =  hub.validLastMarker;  // make a local copy so it can be manipulated in SYNTHETIC mode
         hub.validLastMarker = 0;
 
-        // af
         if (eegDataSource == DATASOURCE_SYNTHETIC || eegDataSource == DATASOURCE_LSL) {
             localValidLastMarker = synthesizeMarkerData();
         }
@@ -134,7 +133,6 @@ class W_MarkerMode extends Widget {
                 markerModeButton.draw();
                 drawMarkerValues();
                 drawMarkerWave();
-            // af
             } else if (eegDataSource == DATASOURCE_LSL) {
                 markerModeButton.draw();
                 drawMarkerValues();
@@ -194,7 +192,6 @@ class W_MarkerMode extends Widget {
         super.mouseReleased(); //calls the parent mouseReleased() method of Widget (DON'T REMOVE)
 
         if(markerModeButton.isActive && markerModeButton.isMouseHere()){
-            // af
             if((cyton.isPortOpen() && eegDataSource == DATASOURCE_CYTON) || eegDataSource == DATASOURCE_SYNTHETIC ||
                     eegDataSource == DATASOURCE_LSL) {
                 if (cyton.getBoardMode() != BoardMode.MARKER) {

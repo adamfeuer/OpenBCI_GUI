@@ -86,7 +86,6 @@ UDP udpRX;
 //choose where to get the EEG data
 final int DATASOURCE_CYTON = 0; // new default, data from serial with Accel data CHIP 2014-11-03
 final int DATASOURCE_GANGLION = 1;  //looking for signal from OpenBCI board via Serial/COM port, no Aux data
-// af
 final int DATASOURCE_LSL = 2;  // take input from Lab Streaming Layer
 final int DATASOURCE_PLAYBACKFILE = 3;  //playback from a pre-recorded text file
 final int DATASOURCE_SYNTHETIC = 4;  //Synthetically generated data
@@ -761,9 +760,7 @@ void initSystem() throws Exception {
         case DATASOURCE_SYNTHETIC:
             //do nothing
             break;
-        // af
         case DATASOURCE_LSL:
-            // af
             lslStream = new LslStream(ourApplet, nEEDataValuesPerPacket, n_aux_ifEnabled);
             lslStream.startDataTransfer();
             thread("lslThread");
@@ -944,7 +941,6 @@ void initFFTObjectsAndBuffer() {
     }
 }
 
-// af
 void startRunning() {
     verbosePrint("startRunning...");
     output("Data stream started.");
@@ -969,7 +965,6 @@ void startRunning() {
     isRunning = true;
 }
 
-// af
 void stopRunning() {
     // openBCI.changeState(0); //make sure it's no longer interpreting as binary
     verbosePrint("OpenBCI_GUI: stopRunning: stop running...");
@@ -1031,7 +1026,6 @@ void stopButtonWasPressed() {
         if (eegDataSource == DATASOURCE_GANGLION && ganglion.isCheckingImpedance()) {
             ganglion.impedanceStop();
         }
-        // af
         if (outputDataSource > OUTPUT_SOURCE_NONE && eegDataSource < DATASOURCE_PLAYBACKFILE)
             {
             //open data file if it has not already been opened
@@ -1292,7 +1286,6 @@ void systemDraw() { //for drawing to the screen
             case DATASOURCE_SYNTHETIC:
                 surface.setTitle(int(frameRate) + " fps, Using Synthetic EEG Data");
                 break;
-            // af
             case DATASOURCE_LSL:
                 surface.setTitle(int(frameRate) + " fps, Using LSL EEG Data");
                 break;
