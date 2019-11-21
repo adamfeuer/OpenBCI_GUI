@@ -2,7 +2,7 @@
 //
 // This class configures and manages the connection to Lab Streaming Layer.
 // LSL input enables OpenBCI to take input from a remote OpenBCI, or other
-// kinds of hardware.
+// kinds of EEG hardware.
 //
 // Created: Adam Feuer, 2019
 //
@@ -37,7 +37,6 @@ class LslStream {
 
     private final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
     private float ADS1299_gain = 24.0;  //assumed gain setting for ADS1299.  set by its Arduino code
-//    private float ADS1299_gain = 1.0;  //assumed gain setting for ADS1299.  set by its Arduino code
     private float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2, 23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
     private final float scale_fac_accel_G_per_count = 0.002 / ((float)pow(2, 4));  //assume set to +/4G, so 2 mG per digit (datasheet). Account for 4 bits unused
     private final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
@@ -200,13 +199,10 @@ class LslStream {
         // TODO change channel state?
     }
 
-    // af
     void getDataFromLslStream(int nchan) {
         float val_uV;
         float[] sample;
         println("LSL: getDataFromLslStream.");
-//        println("LSL: nchan: " + nchan);
-//        println("LSL channel count: " + lslChannelCount);
         if (this.streamIsActive()) {
             println("LSL: getDataFromLslStream, stream is active.");
             try {
@@ -215,19 +211,13 @@ class LslStream {
                 sample_capture_time = lslInlet.pull_sample(sample);
                 while (sample_capture_time != 0.0) {
                     curDataPacketInd = (curDataPacketInd + 1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
-//                    println("sample capture time: " + sample_capture_time);
                     for (int Ichan=0; Ichan < lslChannelCount; Ichan++) {
                         if (isChannelActive(Ichan)) {
                             val_uV = sample[Ichan];
-//                            println("LSL: channel " + Ichan + " reading: " + val_uV);
                         } else {
-//                            println("LSL: inactive channel: " + Ichan);
                             val_uV = 0.0f;
                         }
-//                        dataPacketBuff[curDataPacketInd].values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
-                         // gain 1x
-                        dataPacketBuff[curDataPacketInd].values[Ichan] = (int) val_uV;
-//                        dataPacketBuff[curDataPacketInd].values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
+                        dataPacketBuff[curDataPacketInd].values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
                     }
                 sample_capture_time = lslInlet.pull_sample(sample);
                 }
