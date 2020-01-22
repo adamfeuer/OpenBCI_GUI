@@ -43,7 +43,11 @@ class LslStream {
 
     private int sampleRate = 0;  // will be updated dynamically by examining the LSL stream
 
-    private LSL.StreamInlet lslInlet = null;
+    private int maxLslChannels = 4;
+    private LSL.StreamInfo lslInfo[] = new LSL.StreamInfo[maxLslChannels];
+    private LSL.StreamInlet lslInlet[] = new LSL.StreamInlet[maxLslChannels];
+    private int lslInletChannelCount[] = new int[maxLslChannels];
+
     private boolean active = false;
 
     private int lslChannelCount = 0;
@@ -71,17 +75,22 @@ class LslStream {
     }
 
     public void connectToEegStream() {
-        // create LSL input stream
+        // create LSL input streams
         synchronized (this) {
-            println("LSL: Resolving an EEG stream...");
-            LSL.StreamInfo[] results = LSL.resolve_stream("type","EEG");
-            println("LSL: Resolved LSL EEG stream: " + Arrays.toString(results));
-            lslInlet = new LSL.StreamInlet(results[0]);
-            try {
-                lslChannelCount = lslInlet.info().channel_count();
-            } catch (Exception e) {
-                println("LSL: Error getting LSL stream info.");
-                abandonInit = true;
+            println("LSL: Resolving EEG streams...");
+            lslInfo = LSL.resolve_stream("type","EEG");
+            println("LSL: Resolved LSL EEG streams: " + Arrays.toString(lslInfo));
+            lslChannelCount = 0;
+            for (int i=0; i<lslInfo.length; i++) {
+                lslInlet[i] = new LSL.StreamInlet(lslInfo[i]);
+                try {
+                    lslChannelCount += lslInletChannelCount[i];
+                    lslInletChannelCount[i] = lslInlet[i].info().channel_count();
+                } catch (Exception e) {
+                    println("LSL: Error getting LSL stream info.");
+                    abandonInit = true;
+                    return;
+                }
             }
             this.active = true;
             abandonInit = false;
@@ -91,13 +100,15 @@ class LslStream {
     public void disconnectFromEegStream() {
         synchronized (this) {
             this.active = false;
-            lslInlet = null;
+            for (int i=0; i<lslInlet.length; i++) {
+                lslInlet[i] = null;
+            }
         }
     }
 
     public void resumeEegStream() {
         synchronized (this) {
-            if (lslInlet == null) {
+            if (lslInlet[0] == null) {
                 connectToEegStream();
             }
             this.active = true;
@@ -206,20 +217,34 @@ class LslStream {
         if (this.streamIsActive()) {
             println("LSL: getDataFromLslStream, stream is active.");
             try {
-                sample = new float[lslChannelCount];
-                double sample_capture_time = 0.0;
-                sample_capture_time = lslInlet.pull_sample(sample);
-                while (sample_capture_time != 0.0) {
-                    curDataPacketInd = (curDataPacketInd + 1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
-                    for (int Ichan=0; Ichan < lslChannelCount; Ichan++) {
-                        if (isChannelActive(Ichan)) {
-                            val_uV = sample[Ichan];
-                        } else {
-                            val_uV = 0.0f;
+                boolean moreSamples = true;
+                while (moreSamples) {
+                    // TODO: rethink LSL stream formats
+                    // TODO: streams might have different channel counts?
+                    double sampleCaptureTime[] = new double[lslInlet.length];
+                    float[][] samples = new float[lslInlet.length][lslInletChannelCount[0]];
+                    int sampleNumber = 0;
+                    int inletNumber = 0;
+                    for (LSL.StreamInlet inlet : lslInlet) {
+                        sampleCaptureTime[inletNumber] = lslInlet[inletNumber].pull_sample(samples[inletNumber]);
+                        if (sampleCaptureTime[inletNumber] == 0) {
+                            moreSamples = false;
                         }
-                        dataPacketBuff[curDataPacketInd].values[Ichan] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
+                        inletNumber++;
                     }
-                sample_capture_time = lslInlet.pull_sample(sample);
+                    curDataPacketInd = (curDataPacketInd + 1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
+                    inletNumber = 0;
+                    for (LSL.StreamInlet inlet : lslInlet) {
+                        for (int Ichan=0; Ichan < lslChannelCount; Ichan++) {
+                            if (isChannelActive(Ichan)) {
+                                val_uV = samples[inletNumber][Ichan];
+                            } else {
+                                val_uV = 0.0f;
+                            }
+                            dataPacketBuff[curDataPacketInd].values[Ichan + (inletNumber*lslInletChannelCount[inletNumber])] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
+                            inletNumber++;
+                        }
+                    }
                 }
             }
             catch(Exception e) {

@@ -122,6 +122,11 @@ Button synthChanButton4;
 Button synthChanButton8;
 Button synthChanButton16;
 
+Button lslChanButton8;
+Button lslChanButton16;
+Button lslChanButton24;
+Button lslChanButton32;
+
 Serial board;
 
 ChannelPopup channelPopup;
@@ -204,9 +209,10 @@ public void controlEvent(ControlEvent theEvent) {
         } else if(newDataSource == DATASOURCE_LSL){
             // for now hardcoded to 8 channels
             updateToNChan(8);
-            synthChanButton4.setColorNotPressed(colorNotPressed);
-            synthChanButton8.setColorNotPressed(isSelected_color);
-            synthChanButton16.setColorNotPressed(colorNotPressed);
+            lslChanButton8.setColorNotPressed(isSelected_color);
+            lslChanButton16.setColorNotPressed(colorNotPressed);
+            lslChanButton24.setColorNotPressed(colorNotPressed);
+            lslChanButton32.setColorNotPressed(colorNotPressed);
         }
 
         //output("The new data source is " + str + " and NCHAN = [" + nchan + "]. "); //This text has been added to Init 5 checkpoint messages in first tab
@@ -311,6 +317,7 @@ class ControlPanel {
     SessionDataBox dataLogBoxCyton;
     ChannelCountBox channelCountBox;
     InitBox initBox;
+    LslChannelCountBox lslChannelCountBox;
     SyntheticChannelCountBox synthChannelCountBox;
     RecentPlaybackBox recentPlaybackBox;
     PlaybackFileBox playbackFileBox;
@@ -363,6 +370,7 @@ class ControlPanel {
         dataLogBoxCyton = new SessionDataBox(x + w, (serialBox.y + serialBox.h), w, h, globalPadding, DATASOURCE_CYTON);
         channelCountBox = new ChannelCountBox(x + w, (dataLogBoxCyton.y + dataLogBoxCyton.h), w, h, globalPadding);
         synthChannelCountBox = new SyntheticChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
+        lslChannelCountBox = new LslChannelCountBox(x + w, dataSourceBox.y, w, h, globalPadding);
         sdBox = new SDBox(x + w, (channelCountBox.y + channelCountBox.h), w, h, globalPadding);
         sampleRateCytonBox = new SampleRateCytonBox(x + w + x + w - 3, channelCountBox.y, w, h, globalPadding);
         latencyCytonBox = new LatencyCytonBox(x + w + x + w - 3, (sampleRateCytonBox.y + sampleRateCytonBox.h), w, h, globalPadding);
@@ -568,7 +576,7 @@ class ControlPanel {
                 // hideAllBoxes();
                 synthChannelCountBox.draw();
             } else if (eegDataSource == DATASOURCE_LSL) {  // Lab Streaming Layer
-                synthChannelCountBox.draw();
+                lslChannelCountBox.draw();
             } else if (eegDataSource == DATASOURCE_GANGLION) {
                 if(!hub.isHubRunning()) {
                     noHubBox.draw();
@@ -1082,6 +1090,45 @@ class ControlPanel {
                 }
             }
 
+            //active buttons during DATASOURCE_LSL
+            if (eegDataSource == DATASOURCE_LSL) {
+                if (lslChanButton8.isMouseHere()) {
+                    lslChanButton8.setIsActive(true);
+                    lslChanButton8.wasPressed = true;
+                    lslChanButton8.setColorNotPressed(isSelected_color);
+                    lslChanButton16.setColorNotPressed(colorNotPressed); //default color of button
+                    lslChanButton24.setColorNotPressed(colorNotPressed); //default color of button
+                    lslChanButton32.setColorNotPressed(colorNotPressed); //default color of button
+                }
+
+                if (lslChanButton16.isMouseHere()) {
+                    lslChanButton16.setIsActive(true);
+                    lslChanButton16.wasPressed = true;
+                    lslChanButton16.setColorNotPressed(isSelected_color);
+                    lslChanButton8.setColorNotPressed(colorNotPressed); //default color of button
+                    lslChanButton24.setColorNotPressed(colorNotPressed); //default color of button
+                    lslChanButton32.setColorNotPressed(colorNotPressed); //default color of button
+                }
+
+                if (lslChanButton24.isMouseHere()) {
+                    lslChanButton24.setIsActive(true);
+                    lslChanButton24.wasPressed = true;
+                    lslChanButton24.setColorNotPressed(isSelected_color);
+                    lslChanButton8.setColorNotPressed(colorNotPressed); //default color of button
+                    lslChanButton16.setColorNotPressed(colorNotPressed); //default color of button
+                    lslChanButton32.setColorNotPressed(colorNotPressed); //default color of button
+                }
+
+                if (lslChanButton32.isMouseHere()) {
+                    lslChanButton32.setIsActive(true);
+                    lslChanButton32.wasPressed = true;
+                    lslChanButton32.setColorNotPressed(isSelected_color);
+                    lslChanButton8.setColorNotPressed(colorNotPressed); //default color of button
+                    lslChanButton16.setColorNotPressed(colorNotPressed); //default color of button
+                    lslChanButton24.setColorNotPressed(colorNotPressed); //default color of button
+                }
+            }
+
             //active buttons during DATASOURCE_PLAYBACKFILE
             if (eegDataSource == DATASOURCE_PLAYBACKFILE) {
                 if (selectPlaybackFile.isMouseHere()) {
@@ -1120,34 +1167,6 @@ class ControlPanel {
                     synthChanButton8.setColorNotPressed(colorNotPressed); //default color of button
                 }
             }
-
-            //active buttons during DATASOURCE_LSL
-            if (eegDataSource == DATASOURCE_LSL) {
-                if (synthChanButton4.isMouseHere()) {
-                    synthChanButton4.setIsActive(true);
-                    synthChanButton4.wasPressed = true;
-                    synthChanButton4.setColorNotPressed(isSelected_color);
-                    synthChanButton8.setColorNotPressed(colorNotPressed); //default color of button
-                    synthChanButton16.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (synthChanButton8.isMouseHere()) {
-                    synthChanButton8.setIsActive(true);
-                    synthChanButton8.wasPressed = true;
-                    synthChanButton8.setColorNotPressed(isSelected_color);
-                    synthChanButton4.setColorNotPressed(colorNotPressed); //default color of button
-                    synthChanButton16.setColorNotPressed(colorNotPressed); //default color of button
-                }
-
-                if (synthChanButton16.isMouseHere()) {
-                    synthChanButton16.setIsActive(true);
-                    synthChanButton16.wasPressed = true;
-                    synthChanButton16.setColorNotPressed(isSelected_color);
-                    synthChanButton4.setColorNotPressed(colorNotPressed); //default color of button
-                    synthChanButton8.setColorNotPressed(colorNotPressed); //default color of button
-                }
-            }
-
         }
         // output("Text File Name: " + cp5.get(Textfield.class,"fileNameCyton").getText());
     }
@@ -1476,6 +1495,22 @@ class ControlPanel {
             cyton.setSampleRate(1000);
         }
 
+        if (lslChanButton8.isMouseHere() && lslChanButton8.wasPressed) {
+            updateToNChan(8);
+        }
+
+        if (lslChanButton16.isMouseHere() && lslChanButton16.wasPressed) {
+            updateToNChan(16);
+        }
+
+        if (lslChanButton24.isMouseHere() && lslChanButton24.wasPressed) {
+            updateToNChan(24);
+        }
+
+        if (lslChanButton32.isMouseHere() && lslChanButton32.wasPressed) {
+            updateToNChan(32);
+        }
+
         if (synthChanButton4.isMouseHere() && synthChanButton4.wasPressed) {
             updateToNChan(4);
         }
@@ -1619,6 +1654,14 @@ class ControlPanel {
         wifiInternetProtocolGanglionUDP.wasPressed = false;
         wifiInternetProtocolGanglionUDPBurst.setIsActive(false);
         wifiInternetProtocolGanglionUDPBurst.wasPressed = false;
+        lslChanButton8.setIsActive(false);
+        lslChanButton8.wasPressed = false;
+        lslChanButton16.setIsActive(false);
+        lslChanButton16.wasPressed = false;
+        lslChanButton24.setIsActive(false);
+        lslChanButton24.wasPressed = false;
+        lslChanButton32.setIsActive(false);
+        lslChanButton32.wasPressed = false;
         synthChanButton4.setIsActive(false);
         synthChanButton4.wasPressed = false;
         synthChanButton8.setIsActive(false);
@@ -2731,6 +2774,52 @@ class WifiTransferProtcolCytonBox {
         wifiInternetProtocolCytonTCP.but_y = y + padding*2 + 18;
         wifiInternetProtocolCytonUDP.but_y = wifiInternetProtocolCytonTCP.but_y;
         wifiInternetProtocolCytonUDPBurst.but_y = wifiInternetProtocolCytonTCP.but_y;
+    }
+};
+
+class LslChannelCountBox {
+    int x, y, w, h, padding; //size and position
+
+    LslChannelCountBox(int _x, int _y, int _w, int _h, int _padding) {
+        x = _x;
+        y = _y;
+        w = _w;
+        h = 73;
+        padding = _padding;
+
+        lslChanButton8 = new Button (x + padding, y + padding*2 + 18, (w-padding*4)/3, 24, "8 chan", fontInfo.buttonLabel_size);
+        if (nchan == 8) lslChanButton8.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+        lslChanButton16 = new Button (x + padding*2 + (w-padding*4)/3, y + padding*2 + 18, (w-padding*4)/3, 24, "16 chan", fontInfo.buttonLabel_size);
+        if (nchan == 16) lslChanButton16.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+        lslChanButton24 = new Button (x + padding*3 + ((w-padding*4)/3)*2, y + padding*2 + 18, (w-padding*4)/3, 24, "24 chan", fontInfo.buttonLabel_size);
+        if (nchan == 24) lslChanButton24.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+        lslChanButton32 = new Button (x + padding*4 + ((w-padding*4)/3)*3, y + padding*2 + 18, (w-padding*4)/3, 24, "32 chan", fontInfo.buttonLabel_size);
+        if (nchan == 32) lslChanButton32.setColorNotPressed(isSelected_color); //make it appear like this one is already selected
+    }
+
+    public void update() {
+    }
+
+    public void draw() {
+        pushStyle();
+        fill(boxColor);
+        stroke(boxStrokeColor);
+        strokeWeight(1);
+        rect(x, y, w + 90, h);
+        fill(bgColor);
+        textFont(h3, 16);
+        textAlign(LEFT, TOP);
+        text("CHANNEL COUNT", x + padding, y + padding);
+        fill(bgColor); //set color to green
+        textFont(h3, 16);
+        textAlign(LEFT, TOP);
+        text("  (" + str(nchan) + ")", x + padding + 142, y + padding); // print the channel count in green next to the box title
+        popStyle();
+
+        lslChanButton8.draw();
+        lslChanButton16.draw();
+        lslChanButton24.draw();
+        lslChanButton32.draw();
     }
 };
 
