@@ -217,7 +217,7 @@ class LslStream {
         if (this.streamIsActive()) {
             println("LSL: getDataFromLslStream, stream is active.");
             try {
-                boolean moreSamples = true;
+                boolean moreSamples = false;
                 while (moreSamples) {
                     // TODO: rethink LSL stream formats
                     // TODO: streams might have different channel counts?
