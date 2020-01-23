@@ -17,7 +17,24 @@ boolean isFFTFiltered = true; //yes by default ... this is used in dataProcessin
 class W_fft extends Widget {
     GPlot fft_plot; //create an fft plot for each active channel
     GPointsArray[] fft_points;  //create an array of points for each channel of data (4, 8, or 16)
+    // TODO: this limits channels to 32. Maybe generate or extend dynamically?
     int[] lineColor = {
+        (int)color(129, 129, 129),
+        (int)color(124, 75, 141),
+        (int)color(54, 87, 158),
+        (int)color(49, 113, 89),
+        (int)color(221, 178, 13),
+        (int)color(253, 94, 52),
+        (int)color(224, 56, 45),
+        (int)color(162, 82, 49),
+        (int)color(129, 129, 129),
+        (int)color(124, 75, 141),
+        (int)color(54, 87, 158),
+        (int)color(49, 113, 89),
+        (int)color(221, 178, 13),
+        (int)color(253, 94, 52),
+        (int)color(224, 56, 45),
+        (int)color(162, 82, 49),
         (int)color(129, 129, 129),
         (int)color(124, 75, 141),
         (int)color(54, 87, 158),
