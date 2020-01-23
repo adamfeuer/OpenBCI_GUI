@@ -36,7 +36,9 @@ class LslStream {
     private DataPacket_ADS1299 dataPacket;
 
     private final float ADS1299_Vref = 4.5f;  //reference voltage for ADC in ADS1299.  set by its hardware
-    private float ADS1299_gain = 24.0;  //assumed gain setting for ADS1299.  set by its Arduino code
+    // af
+//    private float ADS1299_gain = 24.0;  //assumed gain setting for ADS1299.  set by its Arduino code
+    private float ADS1299_gain = 1.0;  //assumed gain setting for ADS1299.  set by its Arduino code
     private float scale_fac_uVolts_per_count = ADS1299_Vref / ((float)(pow(2, 23)-1)) / ADS1299_gain  * 1000000.f; //ADS1299 datasheet Table 7, confirmed through experiment
     private final float scale_fac_accel_G_per_count = 0.002 / ((float)pow(2, 4));  //assume set to +/4G, so 2 mG per digit (datasheet). Account for 4 bits unused
     private final float leadOffDrive_amps = 6.0e-9;  //6 nA, set by its Arduino code
@@ -47,6 +49,8 @@ class LslStream {
     private LSL.StreamInfo lslInfo[] = new LSL.StreamInfo[maxLslChannels];
     private LSL.StreamInlet lslInlet[] = new LSL.StreamInlet[maxLslChannels];
     private int lslInletChannelCount[] = new int[maxLslChannels];
+    ArrayList<String> lslInletNameList = new ArrayList<String>();
+    HashMap<String, LSL.StreamInlet> lslInletHash = new HashMap<String, LSL.StreamInlet>();
 
     private boolean active = false;
 
@@ -86,12 +90,26 @@ class LslStream {
                 try {
                     lslChannelCount += lslInletChannelCount[i];
                     lslInletChannelCount[i] = lslInlet[i].info().channel_count();
+                    String lslInletName = lslInlet[i].info().name();
+                    lslInletNameList.add(lslInletName);
+                    lslInletHash.put(lslInletName, lslInlet[i]);
+//                    print("Stream ID");
+//                    println(lslInlet[i]);
+//                    print("Stream info: ");
+//                    println(lslInlet[i].info().name());
                 } catch (Exception e) {
                     println("LSL: Error getting LSL stream info.");
                     abandonInit = true;
                     return;
                 }
             }
+
+            // sort streams by name and redo the lslInlet[] order
+            Collections.sort(lslInletNameList);
+            for (int i=0; i<lslInfo.length; i++) {
+                lslInlet[i] = lslInletHash.get(lslInletNameList.get(i));
+            }
+
             this.active = true;
             abandonInit = false;
         }
@@ -213,12 +231,14 @@ class LslStream {
     void getDataFromLslStream(int nchan) {
         float val_uV;
         float[] sample;
-        println("LSL: getDataFromLslStream.");
+//        println("LSL: getDataFromLslStream.");
         if (this.streamIsActive()) {
-            println("LSL: getDataFromLslStream, stream is active.");
+//            println("LSL: getDataFromLslStream, stream is active.");
             try {
-                boolean moreSamples = false;
+                boolean moreSamples = true;
                 while (moreSamples) {
+                    curDataPacketInd = (curDataPacketInd + 1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
+//                    println("LSL: reading samples.");
                     // TODO: rethink LSL stream formats
                     // TODO: streams might have different channel counts?
                     double sampleCaptureTime[] = new double[lslInlet.length];
@@ -227,23 +247,26 @@ class LslStream {
                     int inletNumber = 0;
                     for (LSL.StreamInlet inlet : lslInlet) {
                         sampleCaptureTime[inletNumber] = lslInlet[inletNumber].pull_sample(samples[inletNumber]);
-                        if (sampleCaptureTime[inletNumber] == 0) {
-                            moreSamples = false;
-                        }
-                        inletNumber++;
-                    }
-                    curDataPacketInd = (curDataPacketInd + 1) % dataPacketBuff.length; // This is also used to let the rest of the code that it may be time to do something
-                    inletNumber = 0;
-                    for (LSL.StreamInlet inlet : lslInlet) {
-                        for (int Ichan=0; Ichan < lslChannelCount; Ichan++) {
+//                        print("LSL: inletNumber: ");
+//                        println(inletNumber);
+//                        print("LSL: sample time: ");
+//                        println(sampleCaptureTime[inletNumber]);
+                        for (int Ichan=0; Ichan < lslInletChannelCount[inletNumber]; Ichan++) {
+//                            print("LSL: channel: ");
+//                            println(Ichan);
                             if (isChannelActive(Ichan)) {
                                 val_uV = samples[inletNumber][Ichan];
+//                                print("LSL: sample value: ");
+//                                println(val_uV);
                             } else {
                                 val_uV = 0.0f;
                             }
                             dataPacketBuff[curDataPacketInd].values[Ichan + (inletNumber*lslInletChannelCount[inletNumber])] = (int) (0.5f+ val_uV / scale_fac_uVolts_per_count); //convert to counts, the 0.5 is to ensure rounding
-                            inletNumber++;
                         }
+                        if (sampleCaptureTime[inletNumber] == 0) {
+                            moreSamples = false;
+                        }
+                        inletNumber++;
                     }
                 }
             }
